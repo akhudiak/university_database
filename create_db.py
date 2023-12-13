@@ -3,10 +3,10 @@ import sqlite3
 
 def create_db():
 
-    with open("salary.sql", "r") as f:
+    with open("university.sql", "r") as f:
         sql = f.read()
     
-    with sqlite3.connect("salary.db") as con:
+    with sqlite3.connect("university.db") as con:
         cursor = con.cursor()
         cursor.executescript(sql)
 
