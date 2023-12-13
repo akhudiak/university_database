@@ -4,68 +4,92 @@ from datetime import datetime
 import sqlite3
 
 
-NUMBER_COMPANIES = 3
-NUMBER_EMPLOYEES = 30
-NUMBER_POSTS = 5
+NUMBER_GROUPS = 3
+NUMBER_STUDENTS = 30
+NUMBER_SUBJECTS = 5
+NUMBER_TEACHERS = 3
 
 
-def generate_fake_data(number_companies, number_employees, number_posts) -> tuple():
+def generate_fake_data(number_groups, number_students, number_subjects, number_teachers) -> tuple():
 
-    fake_data = faker.Faker("uk-UA")
+    fake = faker.Faker("uk-UA")
 
-    fake_companies = []
-    fake_employees = []
-    fake_posts = []
+    fake_groups = []
+    fake_students = []
+    fake_subjects = []
+    fake_teachers = []
 
-    for _ in range(number_companies):
-        fake_companies.append(fake_data.company())
+    for _ in range(number_groups):
+        fake_groups.append(fake.random_lowercase_letter() + fake.random_lowercase_letter() + "-" + str(fake.random_digit()) + str(fake.random_digit()))
 
-    for _ in range(number_employees):
-        fake_employees.append(fake_data.name())
+    for _ in range(number_students):
+        fake_students.append(fake.passport_owner())
 
-    for _ in range(number_posts):
-        fake_posts.append(fake_data.job())
+    subjects = ["Math", "Ecomonic", "Programming", "English", "Philosophy", "Science", "Art", "Physical Education", "Geography", "History", "Biology"]
+    for _ in range(number_subjects):
+        subject = choice(subjects)
+        fake_subjects.append(subject)
+        subjects.remove(subject)
 
-    return fake_companies, fake_employees, fake_posts
+    for _ in range(number_teachers):
+        fake_teachers.append(fake.name())
 
-
-def prepare_data(companies, employees, posts) -> tuple():
-
-    for_companies = []
-    for_employees = []
-    for_payments = []
-
-    for company in companies:
-        for_companies.append((company,))
-
-    for emp in employees:
-        for_employees.append((emp, choice(posts), randint(1, NUMBER_COMPANIES)))
-
-    for month in range(1, 12 + 1):
-        payment_day = datetime(2023, month, randint(10, 20)).date()
-        for emp in range(1, NUMBER_EMPLOYEES + 1):
-            for_payments.append((emp, payment_day, randint(1000, 10000)))
-
-    return for_companies, for_employees, for_payments
+    return fake_groups, fake_students, fake_subjects, fake_teachers
 
 
-def insert_data_to_db(companies, employees, payments) -> None:
+for i in generate_fake_data(NUMBER_GROUPS, NUMBER_STUDENTS, NUMBER_SUBJECTS, NUMBER_TEACHERS):
+    print(i)
+    print()
+
+
+def prepare_data(groups, students, subjects, teachers) -> tuple():
+
+    fake = faker.Faker("uk-UA")
+
+    for_groups = []
+    for_students = []
+    for_subjects = []
+    for_teachers = []
+    for_grades = []
+
+    for group in groups:
+        for_groups.append((group,))
+
+    for first_name, last_name in students:
+        for_students.append((first_name, last_name, randint(1, NUMBER_GROUPS)))
+
+    for subject in subjects:
+        for_subjects.append((subject,  randint(1, NUMBER_TEACHERS)))
+
+    for teacher in teachers:
+        for_teachers.append((teacher,))
+
+    for grade in range(20 + 1):
+        for student in range(1, NUMBER_STUDENTS + 1):
+            for_grades.append((student, randint(1, NUMBER_SUBJECTS + 1), randint(1, 5), fake.past_date()))
+
+    return for_groups, for_students, for_subjects, for_teachers, for_grades
+
+
+def insert_data_to_db(groups, students, payments) -> None:
     
     with sqlite3.connect("salary.db") as con:
 
         cur = con.cursor()
 
-        sql_to_companies = "INSERT INTO companies(company_name) VALUES (?)"
-        cur.executemany(sql_to_companies, companies)
+        sql_to_groups = "INSERT INTO groups(group_name) VALUES (?)"
+        cur.executemany(sql_to_groups, groups)
 
-        sql_to_employees = "INSERT INTO employees(employee, post, company_id) VALUES (?, ?, ?)"
-        cur.executemany(sql_to_employees, employees)
+        sql_to_students = "INSERT INTO students(student, subject, group_id) VALUES (?, ?, ?)"
+        cur.executemany(sql_to_students, students)
 
-        sql_to_payments = "INSERT INTO payments(employee_id, date_of, total) VALUES(?, ?, ?)"
+        sql_to_payments = "INSERT INTO payments(student_id, date_of, total) VALUES(?, ?, ?)"
         cur.executemany(sql_to_payments, payments)
 
         con.commit()
 
-companies, employees, posts = generate_fake_data(NUMBER_COMPANIES, NUMBER_EMPLOYEES, NUMBER_POSTS)
-companies, employees, payments = prepare_data(companies, employees, posts)
-insert_data_to_db(companies, employees, payments)
+
+# if __name__ == "__main__":
+#     groups, students, subjects = generate_fake_data(NUMBER_GROUPS, NUMBER_STUDENTS, NUMBER_SUBJECTS)
+#     groups, students, payments = prepare_data(groups, students, subjects)
+#     insert_data_to_db(groups, students, payments)

@@ -2,14 +2,15 @@
 DROP TABLE IF EXISTS groups;
 CREATE TABLE groups (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    group_name CHAR(4) UNIQUE NOT NULL
+    group_name CHAR(5) UNIQUE NOT NULL
 );
 
 -- Table: students
 DROP TABLE IF EXISTS students;
 CREATE TABLE students (
     id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
-    student VARCHAR(255) NOT NULL,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
     group_id INTEGER,
     FOREIGN KEY (group_id) REFERENCES groups (id)
       ON DELETE SET NULL
@@ -27,7 +28,7 @@ CREATE TABLE teachers (
 DROP TABLE IF EXISTS subjects;
 CREATE TABLE subjects (
     id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
-    one VARCHAR(255) NOT NULL,
+    subject VARCHAR(255) NOT NULL,
     teacher_id INTEGER,
     FOREIGN KEY (teacher_id) REFERENCES teachers (id)
       ON DELETE SET NULL
